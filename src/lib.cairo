@@ -1,7 +1,12 @@
 mod interface;
+#[cfg(test)]
+mod tests;
+
 
 #[starknet::contract]
 mod EthStarkResolver {
+    use core::array::ArrayTrait;
+    use core::array::SpanTrait;
     use option::OptionTrait;
     use starknet::ContractAddress;
     use starknet::contract_address::ContractAddressZeroable;
@@ -76,14 +81,45 @@ mod EthStarkResolver {
     impl InternalImpl of InternalTrait {
         fn get_message_hash(
             self: @ContractState,
-            unicode_domain: Span<(felt252, felt252)>,
+            unicode_domain: Span<(u128, u128, u128)>,
             receiver: ContractAddress
         ) -> felt252 {
             1
         }
 
-        fn build_eth_domain(unicode_domain: Span<(felt252, felt252)>) -> Array<felt252> {
-            Default::default()
+        fn write_eth_domain(
+            self: @ContractState,
+            ref bytes_stream: Array<felt252>,
+            mut unicode_domain: Span<(u128, u128, u128)>
+        ) {
+            loop {
+                match unicode_domain.pop_front() {
+                    Option::Some(x) => {
+                        let (first, second, third) = *x;
+                        self.rec_add_chars(ref bytes_stream, 16, first);
+                        self.rec_add_chars(ref bytes_stream, 16, second);
+                        self.rec_add_chars(ref bytes_stream, 16, third);
+                        bytes_stream.append('.');
+                    },
+                    Option::None => { break; }
+                }
+            };
+            bytes_stream.append('e');
+            bytes_stream.append('t');
+            bytes_stream.append('h');
+        }
+
+        fn rec_add_chars(
+            self: @ContractState, ref arr: Array<felt252>, str_len: felt252, str: u128
+        ) {
+            if str_len == 0 {
+                return;
+            }
+            let (str, char) = DivRem::div_rem(str, 256_u128.try_into().unwrap());
+            self.rec_add_chars(ref arr, str_len - 1, str);
+            if char != 0 {
+                arr.append(char.into());
+            }
         }
     }
 }
