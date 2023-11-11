@@ -6,6 +6,7 @@ version = "0.1.0"
 starknet = "2.3.1"
 naming = { git = "https://github.com/starknet-id/naming", rev = "418030873ae254dd7c7cd11c37a3cb9c00c8e8cd" }
 storage_read = { git = "https://github.com/starknet-id/storage_read_component", rev = "c6c69e15d34abfc39ac51dc21b96724e2e19ff31" }
+encoder = { git = "https://github.com/starknet-id/encoder_component", rev = "9803b4bed6f8933a3f2611b9154ee86df621ae19" }
 
 [[target.starknet-contract]]
 sierra = true

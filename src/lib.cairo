@@ -7,14 +7,17 @@ mod EthStarkResolver {
     use starknet::contract_address::ContractAddressZeroable;
     use starknet::{get_caller_address, get_contract_address, get_block_timestamp};
     use storage_read::{main::storage_read_component, interface::IStorageRead};
+    use encoder::{main::encoder_component, interface::IEncoder};
     use naming::interface::resolver::{IResolver, IResolverDispatcher, IResolverDispatcherTrait};
     use eth_stark_resolver::interface::IEnsMigrator;
     use starknet::secp256k1::Signature;
+    use core::keccak::keccak_u256s_le_inputs;
 
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
-        StorageReadEvent: storage_read_component::Event
+        StorageReadEvent: storage_read_component::Event,
+        EncoderEvent: encoder_component::Event
     }
 
     #[derive(Drop, starknet::Event)]
@@ -29,12 +32,17 @@ mod EthStarkResolver {
     struct Storage {
         #[substorage(v0)]
         storage_read: storage_read_component::Storage,
+        #[substorage(v0)]
+        encoder_storage: encoder_component::Storage,
     }
 
     component!(path: storage_read_component, storage: storage_read, event: StorageReadEvent);
+    component!(path: encoder_component, storage: encoder_storage, event: EncoderEvent);
 
     #[abi(embed_v0)]
     impl StorageReadComponent = storage_read_component::StorageRead<ContractState>;
+    #[abi(embed_v0)]
+    impl encoderImpl = encoder_component::Encoder<ContractState>;
 
     #[external(v0)]
     impl ResolverImpl of IResolver<ContractState> {
@@ -54,12 +62,30 @@ mod EthStarkResolver {
             msg_hash: u256,
             signature: Signature,
             herodotus_proof: felt252
-        ) { // todo:
+        ) {
+            // eth_address 
+            // signature = (u256, u256, u256) - r, s, v from eth Signature 
+            // todo: message hash to recreate 
+
+            // let mut eth_domain = array![];
+            // let mut unicode_domain = unicode_domain;
+            // loop {
+            //     match unicode_domain.pop_front() {
+            //         Option::Some(domain) => { eth_domain.append(self.encode(*domain)); },
+            //         Option::None => { break; }
+            //     }
+            // };
+            let caller = get_caller_address();
+            let caller_felt: felt252 = caller.into();
+            let args: Span<u256> = array!['redeem .eth domain'.into(), caller_felt.into()].span();
+            let hash = keccak_u256s_le_inputs(args);
+            assert(hash == msg_hash, 'Message hash did not match');
+        // todo:
         // assert msg_hash is hash('redeem .eth domain', eth_domain, caller_address)
         // verify that signature corresponds to the hash
         // extract ethereum address from signature (using recover_public_key and derivating address?)
         // validate herodotus proof
-        //  onverts domain from unicode_domain
+        //  converts domain from unicode_domain
         // write caller_address as controller of domain
         // emits an event saying that caller_address claimed domain
         }

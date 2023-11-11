@@ -7,9 +7,15 @@ version = "0.1.0"
 source = "git+https://github.com/starknet-id/custom_uri_component?rev=abb2f3d43c7be56dd5cd9f93c33af40b272c2245#abb2f3d43c7be56dd5cd9f93c33af40b272c2245"
 
 [[package]]
+name = "encoder"
+version = "0.1.0"
+source = "git+https://github.com/starknet-id/encoder_component?rev=9803b4bed6f8933a3f2611b9154ee86df621ae19#9803b4bed6f8933a3f2611b9154ee86df621ae19"
+
+[[package]]
 name = "eth_stark_resolver"
 version = "0.1.0"
 dependencies = [
+ "encoder",
  "naming",
  "storage_read",
 ]
