@@ -70,5 +70,21 @@ mod EthStarkResolver {
         // sets mapping read by resolve
         }
     }
+
+
+    #[generate_trait]
+    impl InternalImpl of InternalTrait {
+        fn get_message_hash(
+            self: @ContractState,
+            unicode_domain: Span<(felt252, felt252)>,
+            receiver: ContractAddress
+        ) -> felt252 {
+            1
+        }
+
+        fn build_eth_domain(unicode_domain: Span<(felt252, felt252)>) -> Array<felt252> {
+            Default::default()
+        }
+    }
 }
 
