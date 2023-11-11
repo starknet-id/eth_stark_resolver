@@ -1,4 +1,6 @@
 mod interface;
+#[cfg(test)]
+mod tests;
 
 #[starknet::contract]
 mod EthStarkResolver {
@@ -11,7 +13,9 @@ mod EthStarkResolver {
     use naming::interface::resolver::{IResolver, IResolverDispatcher, IResolverDispatcherTrait};
     use eth_stark_resolver::interface::IEnsMigrator;
     use starknet::secp256k1::Signature;
-    use core::keccak::keccak_u256s_le_inputs;
+    use core::keccak::cairo_keccak;
+    use traits::{Into, TryInto};
+    use alexandria_math::keccak256::keccak256;
 
     #[event]
     #[derive(Drop, starknet::Event)]
@@ -62,24 +66,18 @@ mod EthStarkResolver {
             msg_hash: u256,
             signature: Signature,
             herodotus_proof: felt252
-        ) {
-            // eth_address 
-            // signature = (u256, u256, u256) - r, s, v from eth Signature 
-            // todo: message hash to recreate 
+        ) {// eth_address 
+        // signature = (u256, u256, u256) - r, s, v from eth Signature 
+        // todo: message hash to recreate 
 
-            // let mut eth_domain = array![];
-            // let mut unicode_domain = unicode_domain;
-            // loop {
-            //     match unicode_domain.pop_front() {
-            //         Option::Some(domain) => { eth_domain.append(self.encode(*domain)); },
-            //         Option::None => { break; }
-            //     }
-            // };
-            let caller = get_caller_address();
-            let caller_felt: felt252 = caller.into();
-            let args: Span<u256> = array!['redeem .eth domain'.into(), caller_felt.into()].span();
-            let hash = keccak_u256s_le_inputs(args);
-            assert(hash == msg_hash, 'Message hash did not match');
+        // let mut eth_domain = array![];
+        // let mut unicode_domain = unicode_domain;
+        // loop {
+        //     match unicode_domain.pop_front() {
+        //         Option::Some(domain) => { eth_domain.append(self.encode(*domain)); },
+        //         Option::None => { break; }
+        //     }
+        // };
         // todo:
         // assert msg_hash is hash('redeem .eth domain', eth_domain, caller_address)
         // verify that signature corresponds to the hash
@@ -104,8 +102,25 @@ mod EthStarkResolver {
             self: @ContractState,
             unicode_domain: Span<(felt252, felt252)>,
             receiver: ContractAddress
-        ) -> felt252 {
-            1
+        ) -> u256 {
+            // let domain_hash: felt252 =
+            //     a025b1a217bc84e4b217654aa94a85ca673637b23f990016df89f0acd7ca8834;
+
+            // val1 = 363a2f63f018f6691a4a91be3738af9474dfa08915515d488bbbe44023073b0b
+            // keccak(ethereum_domain)
+            // riton.eth
+            // 57c49d6978302dafb27c1af60e9f6d5aa710f2547867b8637239efdac1f55577
+
+            // let receiver_felt: felt252 = receiver.into();
+            // let receiver_u256: u256 = receiver_felt.try_into().unwrap();
+            // let hashed_receiver = keccak_u256s_le_inputs(vec![receiver_u256]);
+            // keccak(receiver)
+            // let hash = keccak_u256s_le_inputs();
+
+            let receiver_felt: felt252 = receiver.into();
+            let receiver_u256: u256 = receiver_felt.into();
+            let hashed_receiver = keccak256(array![1].span());
+            hashed_receiver
         }
 
         fn build_eth_domain(unicode_domain: Span<(felt252, felt252)>) -> Array<felt252> {
