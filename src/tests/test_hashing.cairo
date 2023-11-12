@@ -8,7 +8,7 @@ use starknet::{ContractAddress, contract_address_const};
 
 use eth_stark_resolver::EthStarkResolver;
 use eth_stark_resolver::EthStarkResolver::InternalImpl;
-
+use testing::set_contract_address;
 
 #[test]
 #[available_gas(20000000000)]
@@ -40,14 +40,19 @@ fn test_claim() {
     let signature: (u32, u256, u256) = (
         28,
         u256 {
-            low: 261931949998748776939267404548129803226,
-            high: 13201864247169148976061489895718339987
+            low: 264458328843289448807540486485984279057,
+            high: 175010475074688131746407571080189183465
         },
         u256 {
-            low: 137716299578801269734426610133052649767,
-            high: 7791505619358039735595296269689348135
+            low: 71637454079598667298175776862993069603,
+            high: 158880397047593632344396121506762609741
         },
     );
+    let receiver_addr: ContractAddress = contract_address_const::<
+        0x01c744953f1d671673f46a9179a58a7e58d9299499b1e076cdb908e7abffe69f
+    >();
+    set_contract_address(receiver_addr);
+
     unsafe_state.claim(unicode_domain.span(), msg_hash, signature, 0);
 }
 

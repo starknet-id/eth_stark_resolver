@@ -87,9 +87,12 @@ mod EthStarkResolver {
                 Option::Some(eoa_public_key) => {
                     let (x, y) = eoa_public_key.get_coordinates().unwrap();
                     let uncompressed_pub_key = self.concat_hashes(array![(32, x), (32, y)].span());
-                    let eth_addr = keccak256(uncompressed_pub_key.span());
-                    'eth_addr:'.print();
-                    eth_addr.print();
+                    let addr_size: NonZero<u256> = 0x10000000000000000000000000000000000000000_u256
+                        .try_into()
+                        .unwrap();
+                    let (_, eth_addr) = DivRem::div_rem(
+                        keccak256(uncompressed_pub_key.span()), addr_size
+                    );
                 },
                 Option::None => { panic_with_felt252('Could not recover public key'); }
             };
@@ -164,9 +167,6 @@ mod EthStarkResolver {
                     ]
                         .span()
                 );
-            print_31_bytes(concatenated_msg_hash.span(), 0);
-            print_31_bytes(concatenated_msg_hash.span(), 32);
-            print_31_bytes(concatenated_msg_hash.span(), 64);
             let message_hash = keccak256(concatenated_msg_hash.span());
 
             message_hash
