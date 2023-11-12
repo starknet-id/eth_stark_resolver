@@ -1,3 +1,4 @@
+use eth_stark_resolver::interface::IEnsMigrator;
 use core::traits::TryInto;
 use core::option::OptionTrait;
 use core::array::ArrayTrait;
@@ -34,7 +35,7 @@ fn test_hash() {
 #[available_gas(20000000000)]
 fn test_claim() {
     let mut unsafe_state = EthStarkResolver::unsafe_new_contract_state();
-    let unicode_domain = ('riton', 0, 0);
+    let unicode_domain = array![('riton', 0, 0)];
     let msg_hash: u256 = 0xd90ea27cafdcfd6b14f85560c11b84f834f808010de102c0b45b81b815847011;
     let signature: (u32, u256, u256) = (
         28,
@@ -47,5 +48,6 @@ fn test_claim() {
             high: 7791505619358039735595296269689348135
         },
     );
+    unsafe_state.claim(unicode_domain.span(), msg_hash, signature, 0);
 }
 
