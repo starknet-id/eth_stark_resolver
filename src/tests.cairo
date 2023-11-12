@@ -1,3 +1,4 @@
+use core::array::SpanTrait;
 use array::ArrayTrait;
 use starknet::{
     contract_address::contract_address_const, class_hash::Felt252TryIntoClassHash, ContractAddress,
@@ -63,4 +64,41 @@ fn test_concat_hashes() {
         assert(*output[i] == 0, 'expected 0');
         i += 1;
     };
+}
+
+// #[test]
+// #[available_gas(20000000000)]
+// fn test_example_print_bytes() {
+//     let mut a = array![0x12, 0x34, 0x56];
+//     let mut i = 64;
+//     loop {
+//         if i == 0 {
+//             break;
+//         }
+//         i -= 1;
+//         a.append(0);
+//     };
+//     print_31_bytes(a.span(), 1);
+// }
+
+fn print_31_bytes(bytes_arr: Span<u8>, start_index: usize) {
+    let mut sum = 0;
+    let temp = bytes_arr.len() - start_index;
+    rec_sum_31_bytes(ref sum, bytes_arr.slice(start_index, if 31 > temp {
+        temp
+    } else {
+        31
+    }));
+    sum.print();
+}
+
+fn rec_sum_31_bytes(ref sum: felt252, mut iter: Span<u8>) -> felt252 {
+    match iter.pop_front() {
+        Option::Some(x) => {
+            let acc = rec_sum_31_bytes(ref sum, iter);
+            sum += acc * (*x).into();
+            return acc * 256;
+        },
+        Option::None => { return 1; },
+    }
 }
