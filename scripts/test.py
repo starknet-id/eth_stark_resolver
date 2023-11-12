@@ -11,8 +11,15 @@ value = low + 2**128 * high
 print('receiver addr', hex(value))
 
 # Struct hashes
-low = 0xa80e3cf18133e59c85f084831a84557b
-high = 0x70d5d6486d1ddc0a20326d3377db937
+low = 0xeb28398e07a150a539bbdcf5ce1ebeb1
+high = 0x139e7560df701a781132c902ab36a323
 value = low + 2**128 * high
 print('Struct hashes', hex(value))
 # expected result = 0x139e7560df701a781132c902ab36a323eb28398e07a150a539bbdcf5ce1ebeb1
+
+# Message hashes
+low = 0x34f808010de102c0b45b81b815847011
+high = 0xd90ea27cafdcfd6b14f85560c11b84f8
+value = low + 2**128 * high
+print('Message hashes', hex(value))
+# expected result = 0xd90ea27cafdcfd6b14f85560c11b84f834f808010de102c0b45b81b815847011

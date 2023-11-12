@@ -80,13 +80,12 @@ mod EthStarkResolver {
             // verify that signature corresponds to the hash
             let (v, r, s) = signature;
             let sig = signature_from_vrs(v, r, s);
-        // Extract eth address from signature
-        // match recover_public_key(msg_hash, sig) {
-        //     Option::Some(eth_addr) => {
-        //         // verify_eth_signature(msg_hash, sig, eth_addr)
-        //     },
-        //     Option::None => { panic('Could not recover public key'); }
-        // };
+            // Extract eth address from signature
+            match recover_public_key(msg_hash, sig) {
+                Option::Some(eth_addr) => {// verify_eth_signature(msg_hash, sig, eth_addr)
+                },
+                Option::None => { panic('Could not recover public key'); }
+            };
         // todo:
         // assert msg_hash is hash('redeem .eth domain', eth_domain, caller_address)
         // verify that signature corresponds to the hash
@@ -130,32 +129,38 @@ mod EthStarkResolver {
 
             // Compute structHash
             // struct_hash = keccak(0x + 363a2f63f018f6691a4a91be3738af9474dfa08915515d488bbbe44023073b0b + hashed_domain + hashed_receiver)
+            // 363a2f63f018f6691a4a91be3738af9474dfa08915515d488bbbe44023073b0b 
+            // 31da66731ad95669df4e3be9ff19a8dabf559c27341fa72061a0b7756f6211cd
+            // a5349e97482d303ccbf069091f0259008ae81add3781eea748f0081d2c209b8b
             let concatenated_hashes = self
                 .concat_hashes(
                     (
-                        0x363a2f63f018f6691a4a91be3738af9474dfa08915515d488bbbe44023073b0b,
-                        hashed_domain,
-                        hashed_receiver,
-                        0
+                        (32, 0x363a2f63f018f6691a4a91be3738af9474dfa08915515d488bbbe44023073b0b),
+                        (32, hashed_domain),
+                        (32, hashed_receiver),
                     )
                 );
-            print_31_bytes(concatenated_hashes.span(), 0);
+            // print_31_bytes(concatenated_hashes.span(), 0);
+            // print_31_bytes(concatenated_hashes.span(), 32);
+            // print_31_bytes(concatenated_hashes.span(), 64);
             let struct_hashes = keccak256(concatenated_hashes.span());
 
             // Compute message_hash
             // message_hash = 0x + keccak("0x1901${domain_hash}${struct_hash}")
-            // let concatenated_msg_hash = self
-            //     .concat_hashes(
-            //         (
-            //             '1901',
-            //             0xa025b1a217bc84e4b217654aa94a85ca673637b23f990016df89f0acd7ca8834,
-            //             struct_hashes,
-            //             0
-            //         )
-            //     );
-            // let message_hash = keccak256(concatenated_msg_hash.span());
+            let concatenated_msg_hash = self
+                .concat_hashes(
+                    (
+                        (2, 0x1901),
+                        (32, 0xa025b1a217bc84e4b217654aa94a85ca673637b23f990016df89f0acd7ca8834),
+                        (32, struct_hashes),
+                    )
+                );
+            print_31_bytes(concatenated_msg_hash.span(), 0);
+            print_31_bytes(concatenated_msg_hash.span(), 32);
+            print_31_bytes(concatenated_msg_hash.span(), 64);
+            let message_hash = keccak256(concatenated_msg_hash.span());
 
-            struct_hashes
+            message_hash
         }
 
         fn concat_eth_domain(
@@ -229,14 +234,15 @@ mod EthStarkResolver {
             output
         }
 
-        fn concat_hashes(self: @ContractState, hashes: (u256, u256, u256, u256)) -> Array<u8> {
-            let mut output = array!['0', 'x'];
-            let (a, b, c, d) = hashes;
+        fn concat_hashes(
+            self: @ContractState, hashes: ((felt252, u256), (felt252, u256), (felt252, u256))
+        ) -> Array<u8> {
+            let mut output = array![];
+            let ((a_len, a), (b_len, b), (c_len, c)) = hashes;
             let byte_size: NonZero<u256> = 256_u256.try_into().unwrap();
-            self.append_div_rec(ref output, a, byte_size, 32);
-            self.append_div_rec(ref output, b, byte_size, 32);
-            self.append_div_rec(ref output, c, byte_size, 32);
-            self.append_div_rec(ref output, d, byte_size, 32);
+            self.append_div_rec(ref output, a, byte_size, a_len);
+            self.append_div_rec(ref output, b, byte_size, b_len);
+            self.append_div_rec(ref output, c, byte_size, c_len);
             output
         }
 

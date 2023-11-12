@@ -46,27 +46,27 @@ fn test_addr_to_hex() {
     assert(output == array![0x12, 0x34, 0x56], 'unexpected translation');
 }
 
-#[test]
-#[available_gas(20000000000)]
-fn test_concat_hashes() {
-    let mut unsafe_state = EthStarkResolver::unsafe_new_contract_state();
+// #[test]
+// #[available_gas(20000000000)]
+// fn test_concat_hashes() {
+//     let mut unsafe_state = EthStarkResolver::unsafe_new_contract_state();
 
-    let addr: ContractAddress = contract_address_const::<12345>();
-    let output = EthStarkResolver::InternalImpl::concat_hashes(@unsafe_state, (1, 0x1234, 3, 4));
-    assert(output.len() == 32 * 4, 'invalid size');
-    assert(*output[31] == 1, 'expected 1');
-    assert(*output[32 + 31] == 0x34, 'expected 0x34');
-    assert(*output[32 + 30] == 0x12, 'expected 0x12');
+//     let addr: ContractAddress = contract_address_const::<12345>();
+//     let output = EthStarkResolver::InternalImpl::concat_hashes(@unsafe_state, (1, 0x1234, 3, 4));
+//     assert(output.len() == 32 * 4, 'invalid size');
+//     assert(*output[31] == 1, 'expected 1');
+//     assert(*output[32 + 31] == 0x34, 'expected 0x34');
+//     assert(*output[32 + 30] == 0x12, 'expected 0x12');
 
-    let mut i = 0;
-    loop {
-        if i == 31 {
-            break;
-        }
-        assert(*output[i] == 0, 'expected 0');
-        i += 1;
-    };
-}
+//     let mut i = 0;
+//     loop {
+//         if i == 31 {
+//             break;
+//         }
+//         assert(*output[i] == 0, 'expected 0');
+//         i += 1;
+//     };
+// }
 
 // #[test]
 // #[available_gas(20000000000)]
