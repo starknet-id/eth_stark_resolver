@@ -113,18 +113,22 @@ mod EthStarkResolver {
             // riton.eth
             // 57c49d6978302dafb27c1af60e9f6d5aa710f2547867b8637239efdac1f55577
 
-            // let receiver_felt: felt252 = receiver.into();
-            // let receiver_u256: u256 = receiver_felt.try_into().unwrap();
-            // let hashed_receiver = keccak_u256s_le_inputs(vec![receiver_u256]);
-            // keccak(receiver)
-            // let hash = keccak_u256s_le_inputs();
+            // Compute the Keccak of the eth domain 
+            let mut eth_domain = self.concat_eth_domain(unicode_domain);
+            let mut eth_domain_bytes: Array::<u8> = ArrayTrait::new();
+            loop {
+                match eth_domain.pop_front() {
+                    Option::Some(x) => { eth_domain_bytes.append(x.try_into().unwrap()); },
+                    Option::None => { break; }
+                }
+            };
+            let hashed_domain = keccak256(eth_domain_bytes.span());
 
-            // let receiver_felt: felt252 = receiver.into();
-            // let receiver_u256: u256 = receiver_felt.into();
-            // let hashed_receiver = keccak256(array![1].span());
-            let mut eth_domain = ArrayTrait::new();
-            self.write_eth_domain(ref eth_domain, unicode_domain);
-            let hashed_domain = keccak256(eth_domain.span());
+            // Compute the keccak of the receiver address
+            let receiver_felt: felt252 = receiver.into();
+            let receiver_u256: u256 = receiver_felt.into();
+            let hashed_receiver = keccak256(array![1].span());
+
             hashed_domain
         }
 
