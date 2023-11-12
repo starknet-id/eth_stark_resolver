@@ -30,3 +30,22 @@ fn test_hash() {
 //     'unexpected result'
 // )
 }
+
+#[test]
+#[available_gas(20000000000)]
+fn test_claim() {
+    let mut unsafe_state = EthStarkResolver::unsafe_new_contract_state();
+    let unicode_domain = ('riton', 0, 0);
+    let msg_hash : u256 = 0xd90ea27cafdcfd6b14f85560c11b84f834f808010de102c0b45b81b815847011;
+    let signature: (u32, u256, u256) = (
+        28,
+        u256 {
+            low: 261931949998748776939267404548129803226,
+            high: 13201864247169148976061489895718339987
+        },
+        u256 {
+            low: 137716299578801269734426610133052649767,
+            high: 7791505619358039735595296269689348135
+        },
+    );
+}
