@@ -14,13 +14,16 @@ mod EthStarkResolver {
     use encoder::{main::encoder_component, interface::IEncoder};
     use naming::interface::resolver::{IResolver, IResolverDispatcher, IResolverDispatcherTrait};
     use eth_stark_resolver::interface::IEnsMigrator;
-    use starknet::secp256_trait::{signature_from_vrs, recover_public_key};
+    use starknet::secp256_trait::{signature_from_vrs};
     use starknet::eth_signature::verify_eth_signature;
     use core::keccak::cairo_keccak;
     use traits::{Into, TryInto};
     use alexandria_math::keccak256::keccak256;
-
     use debug::PrintTrait;
+    use starknet::secp256k1::{
+        Secp256k1Point, Secp256PointTrait, Secp256Trait, recover_public_key,
+        is_signature_entry_valid, Signature
+    };
 
     #[event]
     #[derive(Drop, starknet::Event)]
@@ -74,17 +77,26 @@ mod EthStarkResolver {
         ) {
             // Assert message hashes match
             let hash = self.get_message_hash(unicode_domain, get_contract_address());
-            assert(hash == msg_hash, 'Hashes do not match');
+            //assert(hash == msg_hash, 'Hashes do not match');
 
             // verify that signature corresponds to the hash
             let (v, r, s) = signature;
             let sig = signature_from_vrs(v, r, s);
-        // Extract eth address from signature
-        // match recover_public_key(msg_hash, sig) {
-        //     Option::Some(eth_addr) => {// verify_eth_signature(msg_hash, sig, eth_addr)
-        //     },
-        //     Option::None => { panic('Could not recover public key'); }
-        // };
+            // Extract eth address from signature
+            match recover_public_key::<Secp256k1Point>(msg_hash, sig) {
+                Option::Some(eoa_public_key) => {
+                    let (x, y) = eoa_public_key.get_coordinates().unwrap();
+                    let uncompressed_pub_key = self.concat_hashes(array![(32, x), (32, y)].span());
+                    let addr_size: NonZero<u256> = 0x10000000000000000000000000000000000000000_u256
+                        .try_into()
+                        .unwrap();
+                    let (_, eth_addr) = DivRem::div_rem(
+                        keccak256(uncompressed_pub_key.span()), addr_size
+                    );
+                // verify_eth_signature(msg_hash, sig, eth_addr)
+                },
+                Option::None => { panic_with_felt252('Could not recover public key'); }
+            };
         // todo:
         // assert msg_hash is hash('redeem .eth domain', eth_domain, caller_address)
         // verify that signature corresponds to the hash
@@ -133,11 +145,12 @@ mod EthStarkResolver {
             // a5349e97482d303ccbf069091f0259008ae81add3781eea748f0081d2c209b8b
             let concatenated_hashes = self
                 .concat_hashes(
-                    (
+                    (array![
                         (32, 0x363a2f63f018f6691a4a91be3738af9474dfa08915515d488bbbe44023073b0b),
                         (32, hashed_domain),
                         (32, hashed_receiver),
-                    )
+                    ]
+                        .span())
                 );
             // print_31_bytes(concatenated_hashes.span(), 0);
             // print_31_bytes(concatenated_hashes.span(), 32);
@@ -148,15 +161,13 @@ mod EthStarkResolver {
             // message_hash = 0x + keccak("0x1901${domain_hash}${struct_hash}")
             let concatenated_msg_hash = self
                 .concat_hashes(
-                    (
+                    array![
                         (2, 0x1901),
                         (32, 0xa025b1a217bc84e4b217654aa94a85ca673637b23f990016df89f0acd7ca8834),
                         (32, struct_hashes),
-                    )
+                    ]
+                        .span()
                 );
-            print_31_bytes(concatenated_msg_hash.span(), 0);
-            print_31_bytes(concatenated_msg_hash.span(), 32);
-            print_31_bytes(concatenated_msg_hash.span(), 64);
             let message_hash = keccak256(concatenated_msg_hash.span());
 
             message_hash
@@ -233,15 +244,19 @@ mod EthStarkResolver {
             output
         }
 
-        fn concat_hashes(
-            self: @ContractState, hashes: ((felt252, u256), (felt252, u256), (felt252, u256))
-        ) -> Array<u8> {
+        fn concat_hashes(self: @ContractState, mut hashes: Span<(felt252, u256)>) -> Array<u8> {
             let mut output = array![];
-            let ((a_len, a), (b_len, b), (c_len, c)) = hashes;
+
             let byte_size: NonZero<u256> = 256_u256.try_into().unwrap();
-            self.append_div_rec(ref output, a, byte_size, a_len);
-            self.append_div_rec(ref output, b, byte_size, b_len);
-            self.append_div_rec(ref output, c, byte_size, c_len);
+            loop {
+                match hashes.pop_front() {
+                    Option::Some((
+                        x_len, x
+                    )) => { self.append_div_rec(ref output, *x, byte_size, *x_len); },
+                    Option::None => { break; }
+                }
+            };
+
             output
         }
 

@@ -10,7 +10,6 @@ use starknet::testing::set_contract_address;
 use eth_stark_resolver::EthStarkResolver;
 use eth_stark_resolver::EthStarkResolver::InternalImpl;
 
-
 #[test]
 #[available_gas(20000000000)]
 fn test_hash() {
