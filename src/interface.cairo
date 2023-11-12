@@ -5,7 +5,7 @@ use starknet::secp256k1::Signature;
 trait IEnsMigrator<TContractState> {
     fn claim(
         ref self: TContractState,
-        unicode_domain: Span<(felt252, felt252)>,
+        unicode_domain: Span<(u128, u128, u128)>,
         msg_hash: u256,
         signature: Signature,
         herodotus_proof : felt252

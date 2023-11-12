@@ -29,8 +29,8 @@ fn test_concat_eth_domain() {
 fn test_addr_to_dec_chars() {
     let mut unsafe_state = EthStarkResolver::unsafe_new_contract_state();
 
-    let addr: ContractAddress = contract_address_const::<12345>();
+    let addr: ContractAddress = contract_address_const::<0x12345>();
     let output = EthStarkResolver::InternalImpl::addr_to_dec_chars(@unsafe_state, addr);
 
-    assert(output == array!['1', '2', '3', '4', '5'], 'unexpected result');
+    assert(output == array![1, 2, 3, 4, 5], 'unexpected result');
 }

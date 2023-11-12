@@ -64,25 +64,17 @@ mod EthStarkResolver {
     impl IEnsMigratorImpl of IEnsMigrator<ContractState> {
         fn claim(
             ref self: ContractState,
-            unicode_domain: Span<(felt252, felt252)>,
+            unicode_domain: Span<(u128, u128, u128)>,
             msg_hash: u256,
-            signature: Signature,
+            signature: Signature, // (v: u32, r: u256, s: u256)
             herodotus_proof: felt252
-        ) { // eth_address 
-        // signature = (u256, u256, u256) - r, s, v from eth Signature 
-        // todo: message hash to recreate 
-
-        // let mut eth_domain = array![];
-        // let mut unicode_domain = unicode_domain;
-        // loop {
-        //     match unicode_domain.pop_front() {
-        //         Option::Some(domain) => { eth_domain.append(self.encode(*domain)); },
-        //         Option::None => { break; }
-        //     }
-        // };
+        ) {
+            let hash = self.get_message_hash(unicode_domain, get_contract_address());
+            assert(hash == msg_hash, 'Hashes do not match');
         // todo:
         // assert msg_hash is hash('redeem .eth domain', eth_domain, caller_address)
         // verify that signature corresponds to the hash
+        // signature_from_vrs
         // extract ethereum address from signature (using recover_public_key and derivating address?)
         // validate herodotus proof
         //  converts domain from unicode_domain
@@ -107,11 +99,7 @@ mod EthStarkResolver {
         ) -> u256 {
             // let domain_hash: felt252 =
             //     a025b1a217bc84e4b217654aa94a85ca673637b23f990016df89f0acd7ca8834;
-
-            // val1 = 363a2f63f018f6691a4a91be3738af9474dfa08915515d488bbbe44023073b0b
-            // keccak(ethereum_domain)
-            // riton.eth
-            // 57c49d6978302dafb27c1af60e9f6d5aa710f2547867b8637239efdac1f55577
+            // fixed value 1 = 363a2f63f018f6691a4a91be3738af9474dfa08915515d488bbbe44023073b0b
 
             // Compute the Keccak of the eth domain 
             let mut eth_domain = self.concat_eth_domain(unicode_domain);
@@ -125,11 +113,12 @@ mod EthStarkResolver {
             let hashed_domain = keccak256(eth_domain_bytes.span());
 
             // Compute the keccak of the receiver address
-            let receiver_felt: felt252 = receiver.into();
-            let receiver_u256: u256 = receiver_felt.into();
-            let hashed_receiver = keccak256(array![1].span());
+            let receiver_arr = self.addr_to_dec_chars(receiver);
+            let hashed_receiver = keccak256(receiver_arr.span());
 
-            hashed_domain
+            // keccak(0x + 363a2f63f018f6691a4a91be3738af9474dfa08915515d488bbbe44023073b0b + hashed_domain + hashed_receiver)
+
+            hashed_receiver
         }
 
         fn concat_eth_domain(
