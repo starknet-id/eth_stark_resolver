@@ -115,11 +115,22 @@ mod EthStarkResolver {
             let receiver_arr = self.addr_to_dec_chars(receiver);
             let hashed_receiver = keccak256(receiver_arr.span());
 
+            // Compute structHash
             // struct_hash = keccak(0x + 363a2f63f018f6691a4a91be3738af9474dfa08915515d488bbbe44023073b0b + hashed_domain + hashed_receiver)
+            let concatenated_hashes = self
+                .concat_hashes(
+                    (
+                        0x363a2f63f018f6691a4a91be3738af9474dfa08915515d488bbbe44023073b0b,
+                        hashed_domain,
+                        hashed_receiver,
+                        0
+                    )
+                );
+            let struct_hashes = keccak256(concatenated_hashes.span());
 
             // message_hash = 0x + keccak("0x1901${domain_hash}${struct_hash}")
 
-            hashed_receiver
+            struct_hashes
         }
 
         fn concat_eth_domain(
@@ -194,7 +205,7 @@ mod EthStarkResolver {
         }
 
         fn concat_hashes(self: @ContractState, hashes: (u256, u256, u256, u256)) -> Array<u8> {
-            let mut output = Default::default();
+            let mut output = array!['0', 'x'];
             let (a, b, c, d) = hashes;
             let sixteen: NonZero<u256> = 16_u256.try_into().unwrap();
             self.append_div_rec(ref output, a, sixteen, 64);

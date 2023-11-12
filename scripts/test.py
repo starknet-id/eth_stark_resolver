@@ -5,9 +5,14 @@ print('riton.eth', hex(value))
 
 
 # Receiver address
-low = 0x5bc76b0f725d66d5af5fe2718ce5759d
-high = 0xe403808191cf5c6afcddbd4fbfa7d1c5
+low = 0x8ae81add3781eea748f0081d2c209b8b
+high = 0xa5349e97482d303ccbf069091f025900
 value = low + 2**128 * high
 print('receiver addr', hex(value))
 
-# 01c744953f1d6710000000000000000000000000000000000000000000000000
+# Struct hashes
+low = 0xdc282cd25bd1c2a995a265510bf2cf7
+high = 0xe54109d5073f6149e456501c5f6568be
+value = low + 2**128 * high
+print('Struct hashes', hex(value))
+# expected result = 0x139e7560df701a781132c902ab36a323eb28398e07a150a539bbdcf5ce1ebeb1
