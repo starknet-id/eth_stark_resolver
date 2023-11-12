@@ -128,11 +128,10 @@ mod EthStarkResolver {
             hashed_domain
         }
 
-        fn write_eth_domain(
-            self: @ContractState,
-            ref bytes_stream: Array<felt252>,
-            mut unicode_domain: Span<(u128, u128, u128)>
-        ) {
+        fn concat_eth_domain(
+            self: @ContractState, mut unicode_domain: Span<(u128, u128, u128)>
+        ) -> Array<felt252> {
+            let mut bytes_stream = Default::default();
             loop {
                 match unicode_domain.pop_front() {
                     Option::Some(x) => {
@@ -148,6 +147,7 @@ mod EthStarkResolver {
             bytes_stream.append('e');
             bytes_stream.append('t');
             bytes_stream.append('h');
+            bytes_stream
         }
 
         fn rec_add_chars(
