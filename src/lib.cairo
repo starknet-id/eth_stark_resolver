@@ -93,7 +93,7 @@ mod EthStarkResolver {
                     let (_, eth_addr) = DivRem::div_rem(
                         keccak256(uncompressed_pub_key.span()), addr_size
                     );
-                // verify_eth_signature(msg_hash, sig, eth_addr)
+                    verify_eth_signature(msg_hash, sig, eth_addr.into());
                 },
                 Option::None => { panic_with_felt252('Could not recover public key'); }
             };
