@@ -18,10 +18,11 @@ fn test_hash() {
         0x01c744953f1d671673f46a9179a58a7e58d9299499b1e076cdb908e7abffe69f
     >();
 
-    let hash = InternalImpl::get_message_hash(@unsafe_state, array![(1, 1)].span(), receiver_addr);
+    let hash = InternalImpl::get_message_hash(
+        @unsafe_state, array![('riton', 0, 0)].span(), receiver_addr
+    );
 
     hash.print();
-
-    // let test: felt252 = hash.try_into().unwrap();
-    // test.print();
+// let test: felt252 = hash.try_into().unwrap();
+// test.print();
 }
