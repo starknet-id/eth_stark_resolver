@@ -15,6 +15,8 @@ mod EthStarkResolver {
     use naming::interface::resolver::{IResolver, IResolverDispatcher, IResolverDispatcherTrait};
     use eth_stark_resolver::interface::IEnsMigrator;
     use starknet::secp256k1::Signature;
+    use starknet::secp256_trait::{signature_from_vrs, recover_public_key};
+    use starknet::eth_signature::verify_eth_signature;
     use core::keccak::cairo_keccak;
     use traits::{Into, TryInto};
     use alexandria_math::keccak256::keccak256;
@@ -66,11 +68,23 @@ mod EthStarkResolver {
             ref self: ContractState,
             unicode_domain: Span<(u128, u128, u128)>,
             msg_hash: u256,
-            signature: Signature, // (v: u32, r: u256, s: u256)
+            signature: (u32, u256, u256), // (v: u32, r: u256, s: u256)
             herodotus_proof: felt252
         ) {
+            // Assert message hashes match
             let hash = self.get_message_hash(unicode_domain, get_contract_address());
             assert(hash == msg_hash, 'Hashes do not match');
+
+            // verify that signature corresponds to the hash
+            let (v, r, s) = signature;
+            let sig = signature_from_vrs(v, r, s);
+        // Extract eth address from signature
+        // match recover_public_key(msg_hash, sig) {
+        //     Option::Some(eth_addr) => {
+        //         // verify_eth_signature(msg_hash, sig, eth_addr)
+        //     },
+        //     Option::None => { panic('Could not recover public key'); }
+        // };
         // todo:
         // assert msg_hash is hash('redeem .eth domain', eth_domain, caller_address)
         // verify that signature corresponds to the hash
@@ -97,9 +111,6 @@ mod EthStarkResolver {
             unicode_domain: Span<(u128, u128, u128)>,
             receiver: ContractAddress
         ) -> u256 {
-            // let domain_hash: felt252 =
-            //     a025b1a217bc84e4b217654aa94a85ca673637b23f990016df89f0acd7ca8834;
-
             // Compute the Keccak of the eth domain 
             let mut eth_domain = self.concat_eth_domain(unicode_domain);
             let mut eth_domain_bytes: Array::<u8> = ArrayTrait::new();
@@ -128,7 +139,18 @@ mod EthStarkResolver {
                 );
             let struct_hashes = keccak256(concatenated_hashes.span());
 
+            // Compute message_hash
             // message_hash = 0x + keccak("0x1901${domain_hash}${struct_hash}")
+            let concatenated_msg_hash = self
+                .concat_hashes(
+                    (
+                        '1901',
+                        0xa025b1a217bc84e4b217654aa94a85ca673637b23f990016df89f0acd7ca8834,
+                        struct_hashes,
+                        0
+                    )
+                );
+            let message_hash = keccak256(concatenated_msg_hash.span());
 
             struct_hashes
         }

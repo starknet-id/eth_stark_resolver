@@ -7,7 +7,7 @@ trait IEnsMigrator<TContractState> {
         ref self: TContractState,
         unicode_domain: Span<(u128, u128, u128)>,
         msg_hash: u256,
-        signature: Signature,
+        signature: (u32, u256, u256),
         herodotus_proof : felt252
     );
 

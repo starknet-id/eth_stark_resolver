@@ -11,8 +11,8 @@ value = low + 2**128 * high
 print('receiver addr', hex(value))
 
 # Struct hashes
-low = 0xdc282cd25bd1c2a995a265510bf2cf7
-high = 0xe54109d5073f6149e456501c5f6568be
+low = 0xa80e3cf18133e59c85f084831a84557b
+high = 0x70d5d6486d1ddc0a20326d3377db937
 value = low + 2**128 * high
 print('Struct hashes', hex(value))
 # expected result = 0x139e7560df701a781132c902ab36a323eb28398e07a150a539bbdcf5ce1ebeb1
