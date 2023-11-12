@@ -10,8 +10,7 @@ fn test_write_eth_domain() {
     let mut unsafe_state = EthStarkResolver::unsafe_new_contract_state();
 
     let domain = array![('alp', 'h', 'a'), ('bravo', 0, 0)];
-    let mut output = ArrayTrait::new();
-    EthStarkResolver::InternalImpl::write_eth_domain(@unsafe_state, ref output, domain.span());
+    let output = EthStarkResolver::InternalImpl::concat_eth_domain(@unsafe_state, domain.span());
 
     assert(
         output == array!['a', 'l', 'p', 'h', 'a', '.', 'b', 'r', 'a', 'v', 'o', '.', 'e', 't', 'h'],
