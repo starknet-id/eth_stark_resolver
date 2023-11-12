@@ -121,6 +121,24 @@ mod EthStarkResolver {
                 arr.append(char.into());
             }
         }
+
+        fn addr_to_dec_chars(self: @ContractState, addr: ContractAddress) -> Array<u8> {
+            let felted: felt252 = addr.into();
+            let ten: NonZero<u256> = 10_u256.try_into().unwrap();
+            let to_add = self.div_rec(felted.into(), ten);
+            to_add
+        }
+
+        fn div_rec(self: @ContractState, value: u256, divider: NonZero<u256>) -> Array<u8> {
+            let (value, digit) = DivRem::div_rem(value, divider);
+            let mut output = if value == 0 {
+                Default::default()
+            } else {
+                self.div_rec(value, divider)
+            };
+            output.append(48 + digit.try_into().unwrap());
+            output
+        }
     }
 }
 
