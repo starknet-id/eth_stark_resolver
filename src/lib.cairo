@@ -14,7 +14,6 @@ mod EthStarkResolver {
     use encoder::{main::encoder_component, interface::IEncoder};
     use naming::interface::resolver::{IResolver, IResolverDispatcher, IResolverDispatcherTrait};
     use eth_stark_resolver::interface::IEnsMigrator;
-    use starknet::secp256k1::Signature;
     use starknet::secp256_trait::{signature_from_vrs, recover_public_key};
     use starknet::eth_signature::verify_eth_signature;
     use core::keccak::cairo_keccak;
@@ -80,12 +79,12 @@ mod EthStarkResolver {
             // verify that signature corresponds to the hash
             let (v, r, s) = signature;
             let sig = signature_from_vrs(v, r, s);
-            // Extract eth address from signature
-            match recover_public_key(msg_hash, sig) {
-                Option::Some(eth_addr) => {// verify_eth_signature(msg_hash, sig, eth_addr)
-                },
-                Option::None => { panic('Could not recover public key'); }
-            };
+        // Extract eth address from signature
+        // match recover_public_key(msg_hash, sig) {
+        //     Option::Some(eth_addr) => {// verify_eth_signature(msg_hash, sig, eth_addr)
+        //     },
+        //     Option::None => { panic('Could not recover public key'); }
+        // };
         // todo:
         // assert msg_hash is hash('redeem .eth domain', eth_domain, caller_address)
         // verify that signature corresponds to the hash
