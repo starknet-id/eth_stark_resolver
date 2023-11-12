@@ -99,7 +99,6 @@ mod EthStarkResolver {
         ) -> u256 {
             // let domain_hash: felt252 =
             //     a025b1a217bc84e4b217654aa94a85ca673637b23f990016df89f0acd7ca8834;
-            // fixed value 1 = 363a2f63f018f6691a4a91be3738af9474dfa08915515d488bbbe44023073b0b
 
             // Compute the Keccak of the eth domain 
             let mut eth_domain = self.concat_eth_domain(unicode_domain);
@@ -116,7 +115,9 @@ mod EthStarkResolver {
             let receiver_arr = self.addr_to_dec_chars(receiver);
             let hashed_receiver = keccak256(receiver_arr.span());
 
-            // keccak(0x + 363a2f63f018f6691a4a91be3738af9474dfa08915515d488bbbe44023073b0b + hashed_domain + hashed_receiver)
+            // struct_hash = keccak(0x + 363a2f63f018f6691a4a91be3738af9474dfa08915515d488bbbe44023073b0b + hashed_domain + hashed_receiver)
+
+            // message_hash = 0x + keccak("0x1901${domain_hash}${struct_hash}")
 
             hashed_receiver
         }
