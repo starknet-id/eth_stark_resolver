@@ -45,7 +45,6 @@ fn test_addr_to_hex() {
     assert(output == array![0x12, 0x34, 0x56], 'unexpected translation');
 }
 
-
 #[test]
 #[available_gas(20000000000)]
 fn test_concat_hashes() {
@@ -53,14 +52,14 @@ fn test_concat_hashes() {
 
     let addr: ContractAddress = contract_address_const::<12345>();
     let output = EthStarkResolver::InternalImpl::concat_hashes(@unsafe_state, (1, 0x1234, 3, 4));
-    assert(output.len() == 64 * 4, 'invalid size');
-
-    assert(*output[63] == 1, 'expected 1');
-    //assert(*output[64 + 63] == 0x34, 'expected 0x34');
+    assert(output.len() == 32 * 4, 'invalid size');
+    assert(*output[31] == 1, 'expected 1');
+    assert(*output[32 + 31] == 0x34, 'expected 0x34');
+    assert(*output[32 + 30] == 0x12, 'expected 0x12');
 
     let mut i = 0;
     loop {
-        if i == 63 {
+        if i == 31 {
             break;
         }
         assert(*output[i] == 0, 'expected 0');
