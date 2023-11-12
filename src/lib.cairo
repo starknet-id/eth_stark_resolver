@@ -77,7 +77,7 @@ mod EthStarkResolver {
         ) {
             // Assert message hashes match
             let hash = self.get_message_hash(unicode_domain, get_contract_address());
-            //assert(hash == msg_hash, 'Hashes do not match');
+            assert(hash == msg_hash, 'Hashes do not match');
 
             // verify that signature corresponds to the hash
             let (v, r, s) = signature;
@@ -140,9 +140,6 @@ mod EthStarkResolver {
 
             // Compute structHash
             // struct_hash = keccak(0x + 363a2f63f018f6691a4a91be3738af9474dfa08915515d488bbbe44023073b0b + hashed_domain + hashed_receiver)
-            // 363a2f63f018f6691a4a91be3738af9474dfa08915515d488bbbe44023073b0b 
-            // 31da66731ad95669df4e3be9ff19a8dabf559c27341fa72061a0b7756f6211cd
-            // a5349e97482d303ccbf069091f0259008ae81add3781eea748f0081d2c209b8b
             let concatenated_hashes = self
                 .concat_hashes(
                     (array![
@@ -152,9 +149,6 @@ mod EthStarkResolver {
                     ]
                         .span())
                 );
-            // print_31_bytes(concatenated_hashes.span(), 0);
-            // print_31_bytes(concatenated_hashes.span(), 32);
-            // print_31_bytes(concatenated_hashes.span(), 64);
             let struct_hashes = keccak256(concatenated_hashes.span());
 
             // Compute message_hash
