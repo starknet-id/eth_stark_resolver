@@ -21,6 +21,8 @@ mod EthStarkResolver {
     use traits::{Into, TryInto};
     use alexandria_math::keccak256::keccak256;
 
+    use debug::PrintTrait;
+
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
@@ -137,20 +139,21 @@ mod EthStarkResolver {
                         0
                     )
                 );
+            print_31_bytes(concatenated_hashes.span(), 0);
             let struct_hashes = keccak256(concatenated_hashes.span());
 
             // Compute message_hash
             // message_hash = 0x + keccak("0x1901${domain_hash}${struct_hash}")
-            let concatenated_msg_hash = self
-                .concat_hashes(
-                    (
-                        '1901',
-                        0xa025b1a217bc84e4b217654aa94a85ca673637b23f990016df89f0acd7ca8834,
-                        struct_hashes,
-                        0
-                    )
-                );
-            let message_hash = keccak256(concatenated_msg_hash.span());
+            // let concatenated_msg_hash = self
+            //     .concat_hashes(
+            //         (
+            //             '1901',
+            //             0xa025b1a217bc84e4b217654aa94a85ca673637b23f990016df89f0acd7ca8834,
+            //             struct_hashes,
+            //             0
+            //         )
+            //     );
+            // let message_hash = keccak256(concatenated_msg_hash.span());
 
             struct_hashes
         }
@@ -250,6 +253,28 @@ mod EthStarkResolver {
             let (value, digit) = DivRem::div_rem(value, divider);
             self.append_div_rec(ref output, value, divider, i - 1);
             output.append(digit.try_into().unwrap());
+        }
+    }
+
+    fn print_31_bytes(bytes_arr: Span<u8>, start_index: usize) {
+        let mut sum = 0;
+        let temp = bytes_arr.len() - start_index;
+        rec_sum_31_bytes(ref sum, bytes_arr.slice(start_index, if 31 > temp {
+            temp
+        } else {
+            31
+        }));
+        sum.print();
+    }
+
+    fn rec_sum_31_bytes(ref sum: felt252, mut iter: Span<u8>) -> felt252 {
+        match iter.pop_front() {
+            Option::Some(x) => {
+                let acc = rec_sum_31_bytes(ref sum, iter);
+                sum += acc * (*x).into();
+                return acc * 256;
+            },
+            Option::None => { return 1; },
         }
     }
 }
