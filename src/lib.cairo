@@ -161,11 +161,11 @@ mod EthStarkResolver {
         fn concat_hashes(self: @ContractState, hashes: (u256, u256, u256, u256)) -> Array<u8> {
             let mut output = Default::default();
             let (a, b, c, d) = hashes;
-            let sixteen: NonZero<u256> = 16_u256.try_into().unwrap();
-            self.append_div_rec(ref output, a, sixteen, 64);
-            self.append_div_rec(ref output, b, sixteen, 64);
-            self.append_div_rec(ref output, c, sixteen, 64);
-            self.append_div_rec(ref output, d, sixteen, 64);
+            let byte_size: NonZero<u256> = 256_u256.try_into().unwrap();
+            self.append_div_rec(ref output, a, byte_size, 32);
+            self.append_div_rec(ref output, b, byte_size, 32);
+            self.append_div_rec(ref output, c, byte_size, 32);
+            self.append_div_rec(ref output, d, byte_size, 32);
             output
         }
 
