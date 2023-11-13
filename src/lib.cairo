@@ -70,7 +70,7 @@ mod EthStarkResolver {
     impl IEnsMigratorImpl of IEnsMigrator<ContractState> {
         fn claim(
             ref self: ContractState,
-            unicode_domain: Span<(u128, u128, u128)>,
+            mut unicode_domain: Span<(u128, u128, u128)>,
             msg_hash: u256,
             signature: (u32, u256, u256), // (v: u32, r: u256, s: u256)
             herodotus_proof: felt252
@@ -79,11 +79,12 @@ mod EthStarkResolver {
             let hash = self.get_message_hash(unicode_domain, get_contract_address());
             assert(hash == msg_hash, 'Hashes do not match');
 
-            // verify that signature corresponds to the hash
+            // Verify that signature corresponds to the hash
             let (v, r, s) = signature;
             let sig = signature_from_vrs(v, r, s);
+
             // Extract eth address from signature
-            match recover_public_key::<Secp256k1Point>(msg_hash, sig) {
+            let eth_address = match recover_public_key::<Secp256k1Point>(msg_hash, sig) {
                 Option::Some(eoa_public_key) => {
                     let (x, y) = eoa_public_key.get_coordinates().unwrap();
                     let uncompressed_pub_key = self.concat_hashes(array![(32, x), (32, y)].span());
@@ -93,16 +94,25 @@ mod EthStarkResolver {
                     let (_, eth_addr) = DivRem::div_rem(
                         keccak256(uncompressed_pub_key.span()), addr_size
                     );
-                    verify_eth_signature(msg_hash, sig, eth_addr.into());
+                    // verify that signature corresponds to the hash
+                    let casted_eth_addr = eth_addr.into();
+                    verify_eth_signature(msg_hash, sig, casted_eth_addr);
+                    casted_eth_addr
                 },
-                Option::None => { panic_with_felt252('Could not recover public key'); }
+                Option::None => { panic_with_felt252('Could not recover public key') }
             };
-        // todo:
-        // verify that signature corresponds to the hash
-        // signature_from_vrs
-        // extract ethereum address from signature (using recover_public_key and derivating address?)
-        // validate herodotus proof
-        //  converts domain from unicode_domain
+
+            // todo: validate herodotus proof
+
+            // Converts domain from unicode_domain
+            let mut domain = ArrayTrait::new();
+            let snapshoted_self = @self;
+            loop {
+                match unicode_domain.pop_front() {
+                    Option::Some(x) => { domain.append(snapshoted_self.encode(*x)); },
+                    Option::None => { break; }
+                }
+            };
         // write caller_address as controller of domain
         // emits an event saying that caller_address claimed domain
         }
