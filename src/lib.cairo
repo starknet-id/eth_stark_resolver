@@ -98,7 +98,6 @@ mod EthStarkResolver {
                 Option::None => { panic_with_felt252('Could not recover public key'); }
             };
         // todo:
-        // assert msg_hash is hash('redeem .eth domain', eth_domain, caller_address)
         // verify that signature corresponds to the hash
         // signature_from_vrs
         // extract ethereum address from signature (using recover_public_key and derivating address?)

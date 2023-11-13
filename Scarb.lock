@@ -33,7 +33,7 @@ source = "git+https://github.com/starknet-id/custom_uri_component?rev=abb2f3d43c
 [[package]]
 name = "encoder"
 version = "0.1.0"
-source = "git+https://github.com/starknet-id/encoder_component?rev=9803b4bed6f8933a3f2611b9154ee86df621ae19#9803b4bed6f8933a3f2611b9154ee86df621ae19"
+source = "git+https://github.com/starknet-id/encoder_component?rev=78512bf6f0788513bc906941b328921e313be732#78512bf6f0788513bc906941b328921e313be732"
 
 [[package]]
 name = "eth_stark_resolver"
